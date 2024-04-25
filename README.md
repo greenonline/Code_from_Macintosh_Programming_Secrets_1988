@@ -6,4 +6,4 @@ The examples are written in Pascal
 
 You can find the first edition on [Vintage Apple - Mac Programming](https://vintageapple.org/macprogramming/)
 
-They is also a second edition (1992), which has code examples in C.
+There is also a second edition (1992), which has code examples in C. Repo for that book coming shortly.
