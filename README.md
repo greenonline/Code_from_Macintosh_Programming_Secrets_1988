@@ -8,8 +8,11 @@ You can find the first edition on [Vintage Apple - Mac Programming](https://vint
 
 There is also a second edition (1992), which has code examples in C. Repo for that book coming shortly.
 
-See also [Inside Macintosh Links](https://gr33nonline.wordpress.com/2024/04/24/inside-macintosh-links/)
+See also:
 
+- [Inside Macintosh Links](https://gr33nonline.wordpress.com/2024/04/24/inside-macintosh-links/)
+- [Source code for Macintosh Programming Secrets (1998)](https://gr33nonline.wordpress.com/2024/04/26/source-code-for-macintosh-programming-secrets-1998/)
+  
 ---
 
 Other Macintosh related repos:
