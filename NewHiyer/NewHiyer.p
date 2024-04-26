@@ -115,7 +115,7 @@ program NewHiyer;
   myWindow := NewWindow(nil, nextWRect, nextWTitle, True, noGrowDocProc, Pointer(-1), True, 0); {open the window}
   SetPort(myWindow);
 {make it the current port}
-  txRect := thePortA.portRect;{prepare TERecord for new window}
+  txRect := thePort^.portRect;{prepare TERecord for new window}
 
   InsetRect(txRect, 4, 0);
   textH := TEStylNew(txRect, txRect);
@@ -123,14 +123,14 @@ program NewHiyer;
   TESetSelect(0, 32767, textH);
   TESetStyle(doSize, theStyle, true, textH);
   myWinPeek := WindowPeek(myWindow);
-  myWinPeekA.refcon := Longint(textH);
+  myWinPeek^.refcon := Longint(textH);
 { keep TEHandle in refcon !}
   OffsetRect(nextWRect, windDX, windDY);{move window down and right}
   if nextWRect.right > dragRect.right then {move back if it's too far over}
    OffsetRect(nextWRect, -nextWRect.left + leftEdge, 0);
   if nextWRect.bottom > dragRect.bottom then
    OffsetRect(nextWRect, 0, -nextWRect.top + topEdge);
-  nextWNum := nextWNum + l; {bump number for next window}
+  nextWNum := nextWNum + 1; {bump number for next window}
   menusOK := false;
   Enableitem(myMenus[editM], 0); {in case this is the only window}
  end; {OpenWindow}
@@ -287,7 +287,7 @@ program NewHiyer;
    mouseLoc: point;
  begin
   GetMouse(mouseLoc);
-  if PtinRect(mouseLoc, thePortA.portRect) then
+  if PtinRect(mouseLoc, thePort^.portRect) then
    SetCursor(GetCursor(iBeamCursor)^^)
   else
    SetCursor(arrow);
@@ -370,13 +370,13 @@ begin {main program}
        TEActivate(textH);
        Enableitem(myMenus[fileM], closeitem);
        Disableitem(myMenus[editM], undoitem);
-       if WindowPeek(FrontWindow)^.nextWindowA.windowKind < O then
+       if WindowPeek(FrontWindow)^.nextWindow^.windowKind < 0 then
        scrCopyErr := TEFromScrap;
        end {if BitAnd... then begin}
       else {application window is becoming inactive}
        begin
        TEDeactivate(TEHandle(WindowPeek(myEvent.message)^.refcon));
-       if WindowPeek(FrontWindow)^.windowKind < O then
+       if WindowPeek(FrontWindow)^.windowKind < 0 then
        begin
        Enableitem(myMenus[editM], undoitem);
        scrapErr := ZeroScrap;
@@ -390,13 +390,13 @@ begin {main program}
     updateEvt: 
      begin
       GetPort(savedPort);
-      SetPort(GrafPtr(rnyEvent.rnessage));
-      BeginUpdate(WindowPtr(rnyEvent.rnessage));
-      EraseRect(WindowPtr(rnyEvent.rnessage)^.portRect);
-      TEUpdate(WindowPtr(rnyEvent.rnessage)^.portRect, TEHandle(WindowPeek(rnyEvent.rnessage)^.refcon));
-      EndUpdate(WindowPtr(rnyEvent.rnessage));
+      SetPort(GrafPtr(myEvent.message));
+      BeginUpdate(WindowPtr(myEvent.message));
+      EraseRect(WindowPtr(myEvent.message)^.portRect);
+      TEUpdate(WindowPtr(myEvent.message)^.portRect, TEHandle(WindowPeek(myEvent.message)^.refcon));
+      EndUpdate(WindowPtr(myEvent.message));
       SetPort(savedPort);
      end; {updateEvt begin}
-   end; {case rnyEvent.what}
+   end; {case myEvent.what}
  until doneFlag;
 end.
