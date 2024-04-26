@@ -39,8 +39,8 @@ program WindMenu;
 
 
   wName = 'Window '; {prefix for window names}
-  winDX = 25; {distance to move for new windows}
-  winDY = 25;
+  windDX = 25; {distance to move for new windows}
+  windDY = 25;
   leftEdge = 10; {initial dimensions of window}
   topEdge = 42;
   rightEdge = 210;
@@ -89,7 +89,7 @@ program WindMenu;
   myMenus[editM] := GetMenu(editID); {read Edit menu }
   myMenus[windowM] := GetMenu(windowID);
 
-  for i := l to menuCount do
+  for i := 1 to menuCount do
    InsertMenu(myMenus[i], 0);  { install menus in menu bar }
   DrawMenuBar; { and draw menu bar}
  end; {SetUpMenus}
@@ -101,7 +101,7 @@ program WindMenu;
  begin
   whichitem := firstWinitem; {start at item no. of dashed line}
   repeat
-   whichitem := whichitem + l;
+   whichitem := whichitem + 1;
    Getitem(myMenus[windowM], whichitem, itemString);
   until (itemString = theName) or (whichitem > (windowCount + firstWinitem));
   if whichitem > (windowCount + firstWinitem) then
@@ -127,11 +127,11 @@ program WindMenu;
   nextWTitle := concat(wName, nextWTitle); {add to prefix}
   myWindow := NewWindow(nil, nextWRect, nextWTitle, True, noGrowDocProc, Pointer(-1), True, 0); {open the window}
   SetPort(myWindow); {make it the current port}
-  txRect := thePortA.portRect;{prepare TERecord for new window}
+  txRect := thePort^.portRect;{prepare TERecord for new window}
   InsetRect(txRect, 4, 0);
   textH := TENew(txRect, txRect);
   myWinPeek := WindowPeek(myWindow);
-  myWinPeekA.refcon := Longint(textH); {keep TEHandle in refcon}
+  myWinPeek^.refcon := Longint(textH); {keep TEHandle in refcon}
   OffsetRect(nextWRect, windDX, windDY);{move window down and right}
   if nextWRect.right > dragRect.right then {move back if it's too far over}
    OffsetRect(nextWRect, -nextWRect.left + leftEdge, 0);
@@ -143,7 +143,8 @@ program WindMenu;
   Enableitem(myMenus[editM], 0); {in case this is the only window}
   windowCount := windowCount + 1;
   AddWintoMenu(nextWTitle);
-  e n d; {OpenWindow}
+ end; {OpenWindow}
+
  procedure KillWindow (theWindow: WindowPtr); {Close a window and throw everything away}
   var
    winName: str255;
@@ -158,14 +159,14 @@ program WindMenu;
   else
    begin
     theWindow := FrontWindow;
-    while (WindowPeek(theWindow)^.windowKind < O) do
+    while (WindowPeek(theWindow)^.windowKind < 0) do
      theWindow := WindowPtr(WindowPeek(theWindow)^.nextWindow);
     GetWTitle(theWindow, winName);
     curWinitem := ItemFromName(winName);
     curWinName := winName;
    end;
 
-  if WindowPeek(FrontWindow)^.windowKind < O then
+  if WindowPeek(FrontWindow)^.windowKind < 0 then
 {if a desk ace is coming up, enable undo}
    Enableitem(myMenus[editM], undoitem)
   else
@@ -206,10 +207,9 @@ program WindMenu;
  function NextNoDA (theWindow: windowPeek): windowPeek;
  begin
   if theWindow <> nil then
-   while (theindowA.windowKind < O) do {weed out DAs}
+   while (theWindow^.windowKind < 0) do {weed out DAs}
     theWindow := theWindow^.nextWindow;
-  NextNoDA := theW
-  indow;
+  NextNoDA := theWindow;
  end;
  function LastNoDA: windowPeek;
 {Finds the rearmost window that's not a DA}
@@ -219,10 +219,10 @@ program WindMenu;
   if FrontWindow <> nil then
    begin
     lastGoodUn := NextNoDA(WindowPeek(FrontWindow));
-    while NextNoDA(lastGoodUnA.nextWindow) <> nil do
-     lastGoodUn := NextNoDA(lastGoodUnA.nextWindow);
+    while NextNoDA(lastGoodUn^.nextWindow) <> nil do
+     lastGoodUn := NextNoDA(lastGoodUn^.nextWindow);
    end;
-  LastNoDAlastGoodUn;
+  LastNoDA := lastGoodUn;
  end;
  function numFromitem (theDialog: DialogPtr; itemNo: Integer): Integer;
 {Given a dialog item number, return its value as an integer}
@@ -233,10 +233,10 @@ program WindMenu;
    theText: Str255;
    theNum: Longint;
  begin
-  GetDitem(theDialog, iternNo, itemType, item, box); {get item handle}
+  GetDitem(theDialog, itemNo, itemType, item, box); {get item handle}
   GetIText(item, theText); {get its text}
   StringToNum(theText, theNum);
-  nurnFromitem := theNum;
+  numFromitem := theNum;
  end;
  procedure DoWinShuffle (theitem: Integer);
 {Handle Stack, T ile, and Move & Resize commands}
@@ -267,7 +267,7 @@ program WindMenu;
        nextPos.h := rightEdge;
        if nextPos.v < topEdge then
        nextPos.v := botEdge;
-       theWindow := NextNoDA(theWindowA.nextWindow);
+       theWindow := NextNoDA(theWindow^.nextWindow);
       end;
 
     end; {case stackitem}
@@ -374,7 +374,7 @@ program WindMenu;
       end; {if theitem < ... else}
     end; {windowID}
   end; {case theMenu}
-  HiliteMenu(O);
+  HiliteMenu(0);
  end; {DoCommand}
 
  procedure FixCursor;
@@ -382,7 +382,7 @@ program WindMenu;
    mouseLoc: point;
  begin
   GetMouse(mouseLoc);
-  if PtinRect(mouseLoc, thePortA.portRect) then
+  if PtinRect(mouseLoc, thePort^.portRect) then
    SetCursor(GetCursor(iBeamCursor)^^)
   else
    SetCursor(arrow);
@@ -403,15 +403,15 @@ begin {main program}
  doneFlag := false;
  menusOK := false;
  windowCount := 0;
- curWinitem := O;
- nextWNum := l; {initialize window number}
+ curWinitem := 0;
+ nextWNum := 1; {initialize window number}
  SetRect(nextWRect, leftEdge, topEdge, rightEdge, botEdge); {initialize window rectangle}
  OpenWindow;  { start with one open window }
 {Main event loop}
  repeat
   SystemTask;
   if FrontWindow <> nil then
-   if WindowPeek(FrontWindow)^.windowKind >= O then
+   if WindowPeek(FrontWindow)^.windowKind >= 0 then
     FixCursor;
   if not menusOK and (FrontWindow = nil) then
    begin
@@ -426,29 +426,30 @@ begin {main program}
    case myEvent.what of
     mouseDown: 
      case FindWindow(myEvent.where, whichWindow) of
-     end;
-    inGoAway: 
-     if TrackGoAway(whichWindow, myEvent.where) then
-      KillWindow(whichWindow);
-{case FindWindow}
-    inSysWindow: 
-     SystemClick(myEvent, whichWindow);
-    inMenuBar: 
-     DoCommand(MenuSelect(myEvent.where));
-    inDrag: 
-     DragWindow(whichWindow, myEvent.where, dragRect);
-    inContent: 
-     begin
-      if whichWindow <> FrontWindow then
+      inSysWindow: 
+       SystemClick(myEvent, whichWindow);
+      inMenuBar: 
+       DoCommand(MenuSelect(myEvent.where));
+      inDrag: 
+       DragWindow(whichWindow, myEvent.where, dragRect);
+      inContent: 
+       begin
+       if whichWindow <> FrontWindow then
 
        SelectWindow(whichWindow)
-      else
+       else
        begin
        GlobalToLocal(myEvent.where);
        extended := BitAnd(myEvent.modifiers, shiftKey) <> 0;
        TEClick(myEvent.where, extended, textH);
        end; {else}
-     end; {inContent}
+       end; {inContent}
+
+
+      inGoAway: 
+       if TrackGoAway(whichWindow, myEvent.where) then
+       KillWindow(whichWindow);
+     end; {case FindWindow}
     keyDown, autoKey: 
      begin
       theChar := CHR(BitAnd(myEvent.message, charCodeMask));
@@ -477,8 +478,7 @@ begin {main program}
        end;
        GetWTitle(WindowPtr(myEvent.message), windowName);
        curWinitem := ItemFromName(windowName);
-       curWinName: ;
-       windowName;
+       curWinName := windowName;
        Checkitem(myMenus[windowM], curWinitem, true);
        if windowCount > 1 then
        begin
@@ -490,13 +490,13 @@ begin {main program}
       else {application window is becoming inactive}
        begin
        TEDeactivate(TEHandle(WindowPeek(myEvent.message)^.refcon));
-       if WindowPeek(FrontWindow)^.windowKind < O then
+       if WindowPeek(FrontWindow)^.windowKind < 0 then
        Enableitem(myMenus[editM], undoitem)
        else
        DisableItem(myMenus[editM], undoitem);
        end; {else begin}
-     end{activateEvt begin}
-     updateEvt: 
+     end; {activateEvt begin}
+    updateEvt: 
      begin
       GetPort(savedPort);
       SetPort(GrafPtr(myEvent.message));
