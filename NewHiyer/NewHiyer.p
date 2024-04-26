@@ -23,7 +23,7 @@ program NewHiyer;
   fontID = 132;
   sizeID = 133;
   styleID = 134;
-  appleM = l;  {index for each menu in myMenus (array of menu handles)}
+  appleM = 1;  {index for each menu in myMenus (array of menu handles)}
   fileM = 2;
   editM = 3;
   textM = 4;
@@ -43,7 +43,7 @@ program NewHiyer;
   closeitem = 3;
   quititem = 5;
 
-  fontitem = l; {items in Text menu}
+  fontitem = 1; {items in Text menu}
   sizeitem = 2;
   styleitm = 3;
 
@@ -57,7 +57,7 @@ program NewHiyer;
 {distance to move for new windows}
 {initial dimensions of window}
  var
-  myMenus: array[l..menuCount] of MenuHandle; {handles to the menu}
+  myMenus: array[1..menuCount] of MenuHandle; {handles to the menu}
   dragRect: Rect;{rectangle used to mark boundaries for dragging window}
   txRect: Rect;{rectangle for text in application window}
   textH: TEHandle;{handle to T extedit record}
@@ -162,7 +162,7 @@ program NewHiyer;
     HiliteControl(ControlHandle(theitem), 1);
     Delay(8, finalTicks);
     HiliteControl(ControlHandle(theitem), 0);
-    itemHit := l;
+    itemHit := 1;
     MyFilter := True;
    end { if BitAnd .. . then     begin}
   else
@@ -175,7 +175,7 @@ program NewHiyer;
   myWindow := GetNewDialog(1000, nil, pointer(-1));
   repeat
    ModalDialog(@MyFilter, itemHit)
-  until itemHit = l;
+  until itemHit = 1;
   DisposDialog(myWindow);
  end; {procedure DoAboutBox}
 
@@ -307,7 +307,7 @@ begin {main program}
   SetRect(dragRect, 4, 24, right - 4, bottom - 4);
  doneFlag := false;
  menusOK := false;
- nextWNum := l;
+ nextWNum := 1;
 {initialize window number}
  SetRect(nextWRect, leftEdge, topEdge, rightEdge, botEdge);
 {initialize window rectangle}
