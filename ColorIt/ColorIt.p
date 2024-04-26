@@ -18,15 +18,15 @@ program Colorit;
   fileID = 129;
   editID = 130;
   colorID = 131;
-  appleM = l; {index for each menu in myMenus (array of menu handles)}
+  appleM = 1; {index for each menu in myMenus (array of menu handles)}
   fileM = 2;
   editM = 3;
   colorM = 4;
   menuCount = 4; {total number of menus}
 
-  aboutitem = l; {item in Apple menu}
+  aboutitem = 1; {item in Apple menu}
 
-  undoItem = l;    {Items in Edit menu}
+  undoItem = 1;    {Items in Edit menu}
 
   cutItem = 3;
   copyItem = 4;
@@ -100,7 +100,7 @@ program Colorit;
   myMenus[colorM] := GetMenu(colorID);
 
 
-  for i := l to menuCount do
+  for i := 1 to menuCount do
    InsertMenu(myMenus[i], 0); {install menus in menu bar}
   DrawMenuBar; { and draw menu bar}
  end; {SetUpMenus}
@@ -110,17 +110,17 @@ program Colorit;
   nextWTitle := concat(wName, nextWTitle); {add to prefix}
   myWindow := NewWindow(nil, nextWRect, nextWTitle, True, noGrowDocProc, Pointer(-1), True, 0); {open the window}
   SetPort(myWindow); {make it the current port}
-  txRect := thePortA.portRect;{prepare TERecord for new window}
+  txRect := thePort^.portRect;{prepare TERecord for new window}
   InsetRect(txRect, 4, 0);
   textH := TENew(txRect, txRect);
   myWinPeek := WindowPeek(myWindow);
-  myWinPeekA.refcon := Longint(textH); {keep TEHandle in refcon!}
+  myWinPeek^.refcon := Longint(textH); {keep TEHandle in refcon!}
   OffsetRect(nextWRect, windDX, windDY);{move window down and right}
   if nextWRect.right > dragRect.right then {move back if it's too far over}
-   OffsetRect(nextWRect, -hextWRect.left + leftEdge, 0);
+   OffsetRect(nextWRect, -nextWRect.left + leftEdge, 0);
   if nextWRect.bottom > dragRect.bottom then
    OffsetRect(nextWRect, 0, -nextWRect.top + topEdge);
-  nextWNum := nextWNum + l; {bump number for next window}
+  nextWNum := nextWNum + 1; {bump number for next window}
   menusOK := false;
   Enableitem(myMenus[editM], 0); {in case this is the only window}
  end; {OpenWindow}
@@ -132,7 +132,7 @@ program Colorit;
   textH := nil; {for TEidle in main event loop}
   if FrontWindow = nil then {if no more windows, disable Close}
    Disableitem(myMenus[fileM], closeitem);
-  if WindowPeek(FrontWindow)^.windowKind < O then
+  if WindowPeek(FrontWindow)^.windowKind < 0 then
 {if a desk ace is coming up, enable undo}
    Enableitem(myMenus[editM], undoitem)
   else
@@ -150,10 +150,10 @@ program Colorit;
  {enter}
    begin
     GetDitem(theDialog, 1, theType, theitem, theBox);
-    HiliteControl(ControlHandle(theitem), l);
+    HiliteControl(ControlHandle(theitem), 1);
     Delay(8, finalTicks);
     HiliteControl(ControlHandle(theitem), 0);
-    itemHit := l;
+    itemHit := 1;
     MyFilter := True;
    end {if BitAnd...then begin}
   else
@@ -166,7 +166,7 @@ program Colorit;
   myWindow := GetNewDialog(1000, nil, pointer(-1));
   repeat
    ModalDialog(@MyFilter, itemHit)
-  until itemHit = l;
+  until itemHit = 1;
   DisposDialog(myWindow);
  end; {procedure DoAboutBox}
  procedure ColorMe (color: Integer);
@@ -174,7 +174,7 @@ program Colorit;
   myWindow := FrontWindow;
   SetPort(myWindow);
   BackColor(color);
-  InvalRect(thePortA.portBits.bounds);
+  InvalRect(thePort^.portBits.bounds);
  end;
  procedure DoCommand (mResult: LONGINT);
   var
@@ -222,8 +222,6 @@ program Colorit;
       doneFlag := TRUE; {quit}
     end; {case theitem}
 
-
-
    editID: 
     begin
      if not SystemEdit(theitem - 1) then
@@ -238,6 +236,7 @@ program Colorit;
        TEDelete(textH);
       end; {case theitem}
     end; {editID begin}
+
    colorID: 
     begin
      Getitem(myMenus[colorM], theitem, itemString);
@@ -264,14 +263,15 @@ program Colorit;
 {case theitem }
     end; {colorID begin}
   end; {case theMenu}
-  HiliteMenu(O);
-  e n d; {DoComrnand}
+  HiliteMenu(0);
+ end; {DoCommand}
+
  procedure FixCursor;
   var
-   rnouseLoc: point;
+   mouseLoc: point;
  begin
   GetMouse(mouseLoc);
-  if PtinRect(mouseLoc, thePortA.portRect) then
+  if PtinRect(mouseLoc, thePort^.portRect) then
    SetCursor(GetCursor(iBeamCursor)^^)
   else
    SetCursor(arrow);
@@ -291,7 +291,7 @@ begin {main program}
   SetRect(dragRect, 4, 24, right - 4, bottom - 4);
  doneFlag := false;
  menusOK := false;
- nextWNum := l; {initialize window number}
+ nextWNum := 1; {initialize window number}
  SetRect(nextWRect, leftEdge, topEdge, rightEdge, botEdge);
 {initialize window rectangle}
  OpenWindow; {start with one open window}
@@ -300,7 +300,7 @@ begin {main program}
  repeat
   SystemTask;
   if FrontWindow <> nil then
-   if WindowPeek(FrontWindow)^.windowKind >= O then
+   if WindowPeek(FrontWindow)^.windowKind >= 0 then
     FixCursor;
   if not menusOK and (FrontWindow = nil) then
    begin
@@ -327,25 +327,16 @@ begin {main program}
        SelectWindow(whichWindow)
        else
        begin
-
-
        GlobalToLocal(myEvent.where);
        extended := BitAnd(myEvent.modifiers, shiftKey) <> 0;
        TEClick(myEvent.where, extended, textH);
        end; {else}
        end; {inContent}
 
-
-
-
       inGoAway: 
        if TrackGoAway(whichWindow, myEvent.where) then
        KillWindow(whichWindow);
      end; {case FindWindow}
-
-
-
-
 
     keyDown, autoKey: 
      begin
@@ -385,18 +376,14 @@ begin {main program}
      end; {activateEvt begin}
     updateEvt: 
      begin
-     end;
-    GetPort(savedPort);
-    SetPort(GrafPtr(myEvent.message));
-    BeginUpdate(WindowPtr(myEvent.message));
-    EraseRect(WindowPtr(myEvent.message)^.portRect);
-    TEUpdate(WindowPtr(myEvent.message)^.portRect, TEHandle(WindowPeek(myEvent.message)^.refcon));
-    EndUpdate(WindowPtr(myEvent.message));
-    SetPort(savedPort);
-   end; {updateEvt begin}
- {case myEvent.what}
+      GetPort(savedPort);
+      SetPort(GrafPtr(myEvent.message));
+      BeginUpdate(WindowPtr(myEvent.message));
+      EraseRect(WindowPtr(myEvent.message)^.portRect);
+      TEUpdate(WindowPtr(myEvent.message)^.portRect, TEHandle(WindowPeek(myEvent.message)^.refcon));
+      EndUpdate(WindowPtr(myEvent.message));
+      SetPort(savedPort);
+     end; {updateEvt begin}
+   end;  {case myEvent.what}
  until doneFlag;
 end.
-
-
-
