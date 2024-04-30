@@ -41,6 +41,8 @@ See also:
 - [Inside Macintosh Links](https://gr33nonline.wordpress.com/2024/04/24/inside-macintosh-links/)
 - [Source code for Macintosh Programming Secrets - First Edition (1998)](https://gr33nonline.wordpress.com/2024/04/28/source-code-for-macintosh-programming-secrets-first-edition-1988/)
 - [Source code for Macintosh Programming Secrets - Second Edition (1992)](https://gr33nonline.wordpress.com/2024/04/28/source-code-for-macintosh-programming-secrets-second-edition-1992/)
+- [Errata - Macintosh Programming Secrets (1992)](https://gr33nonline.wordpress.com/2024/04/29/errata-macintosh-programming-secrets-1992/)
+
   
 ---
 
